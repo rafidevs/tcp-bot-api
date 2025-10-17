@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friend Adder - Dev by Rafi</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+    body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    .container {
+        background: #fff;
+        padding: 50px 40px;
+        border-radius: 25px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        width: 100%;
+        max-width: 450px;
+        text-align: center;
+        transition: transform 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .container:hover { transform: translateY(-5px); }
+    h1 { color: #333; margin-bottom: 30px; font-weight: 700; font-size: 28px; }
+    input {
+        width: 100%;
+        padding: 18px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        border: 2px solid #ccc;
+        font-size: 16px;
+        transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+    input:focus { border-color: #764ba2; box-shadow: 0 0 10px rgba(118,75,162,0.4); outline: none; }
+    button {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: #fff;
+        font-size: 17px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    button:hover { background: linear-gradient(45deg, #764ba2, #667eea); transform: scale(1.05); box-shadow: 0 5px 20px rgba(0,0,0,0.2);}
+    
+    /* Result animation */
+    #result {
+        margin-top: 20px;
+        font-weight: 500;
+        padding: 10px 15px;
+        border-radius: 10px;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.4s ease;
+        display: inline-block;
+    }
+    #result.show {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .footer {
+        margin-top: 35px;
+        font-size: 14px;
+        color: rgba(0,0,0,0.5);
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Friend Adder</h1>
+    <input type="text" id="uidInput" placeholder="Enter Player UID" />
+    <button onclick="addFriend()">Add Friend</button>
+    <div id="result"></div>
+    <div class="footer">Dev by Rafi</div>
+</div>
+
+<script>
+async function addFriend() {
+    const uid = document.getElementById('uidInput').value.trim();
+    const resultDiv = document.getElementById('result');
+
+    if (!uid) {
+        resultDiv.style.background = "#f8d7da";
+        resultDiv.style.color = "#721c24";
+        resultDiv.innerText = "Please enter a UID";
+        resultDiv.classList.add("show");
+        return;
+    }
+
+    resultDiv.style.background = "#fff3cd";
+    resultDiv.style.color = "#856404";
+    resultDiv.innerText = "Processing...";
+    resultDiv.classList.add("show");
+
+    try {
+        const res = await fetch('/add-friend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUID: uid })
+        });
+        const data = await res.json();
+        if (data.success) {
+            // Success animation
+            resultDiv.style.background = "#d4edda";
+            resultDiv.style.color = "#155724";
+            resultDiv.innerText = "✅ Friend request sent successfully!";
+            resultDiv.classList.add("show");
+            // Animation effect
+            resultDiv.animate([
+                { transform: 'scale(0.5)', opacity: 0 },
+                { transform: 'scale(1.2)', opacity: 1 },
+                { transform: 'scale(1)', opacity: 1 }
+            ], { duration: 500 });
+        } else {
+            resultDiv.style.background = "#f8d7da";
+            resultDiv.style.color = "#721c24";
+            resultDiv.innerText = "❌ Error: " + data.error;
+            resultDiv.classList.add("show");
+        }
+    } catch (err) {
+        resultDiv.style.background = "#f8d7da";
+        resultDiv.style.color = "#721c24";
+        resultDiv.innerText = "❌ Request failed: " + err.message;
+        resultDiv.classList.add("show");
+    }
+}
+</script>
+</body>
+</html>
